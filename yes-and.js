@@ -1,73 +1,107 @@
-let yesAnd = function (objStr, options) {
-    try {
-        let errStrings = [];
-        if (!!objStr && typeof objStr === 'string' && !!objStr.length < 1 || typeof objStr !== 'string' || !objStr) {
-            switch (typeof objStr) {
-                case 'string':
-                    errStrings.push('You passed an empty string, expected an array/object accessor string.');
-                    break;
-                default:
-                    errStrings.push(`Type of argument 1 passed was ${typeof objStr}, expected a string.`);
-                    break;
+"use strict";
+let yesAnd =
+    /**
+     * @param objStr A string that will be exploded. in: window.example out: !!window && !!window.example.
+     * @param options An object containing options. rtnValue (last part of string is prefixed with !! or not). wrap object, containing idx array and method string. method string example is JSON.parse, and idx array is an array of idx in the string to return, where you would like to wrap the string with wrap method. 
+     */
+    function (objStr, options) {
+        try {
+            // Array to hold all errors found with supplied arguments
+            //BEGIN ERROR CHECKING
+            let errStrings = [];
+            if (!!objStr && typeof objStr === 'string' && !!objStr.length < 1 || typeof objStr !== 'string' || !objStr) {
+                switch (typeof objStr) {
+                    case 'string':
+                        errStrings.push('You passed an empty string, expected an array/object accessor string.');
+                        break;
+                    default:
+                        errStrings.push(`Type of argument 1 passed was ${typeof objStr}, expected a string.`);
+                        break;
+                }
             }
-        }
-        if (!options || typeof options !== 'object') {
-            switch (typeof options) {
-                case 'undefined':
-                    errStrings.push('You didn\'t provide an options object for agument 2, expects an object with property rtnValue:true/false.');
-                    break;
-                default:
-                    errStrings.push(`Type of argument 2 was ${typeof options}, expects an object with property rtnValue:true/false.`);
-                    break;
+            if (!options || typeof options !== 'object') {
+                switch (typeof options) {
+                    case 'undefined':
+                        errStrings.push('You didn\'t provide an options object for agument 2, expects an object with property rtnValue:true/false.');
+                        break;
+                    default:
+                        errStrings.push(`Type of argument 2 was ${typeof options}, expects an object with property rtnValue:true/false.`);
+                        break;
+                }
             }
-        }
-        if(!!options  && typeof options.rtnValue !== 'boolean') {
-            switch (typeof options.rtnValue) {
-                case 'undefined':
-                    errStrings.push('You didn\'t provide a rtnVal property in the object of argument 2, expects an object with property rtnValue:true/false.');
-                    break;
-                default:
-                    errStrings.push(`You provided a rtnValue value property with ${typeof options.rtnValue} data type in the object of argument 2, expects an object with property rtnValue:true/false.`);
-                    break;
+            if (!!options && typeof options.rtnValue !== 'boolean') {
+                switch (typeof options.rtnValue) {
+                    case 'undefined':
+                        errStrings.push('You didn\'t provide a rtnVal property in the object of argument 2, expects an object with property rtnValue:true/false.');
+                        break;
+                    default:
+                        errStrings.push(`You provided a rtnValue value property with ${typeof options.rtnValue} data type in the object of argument 2, expects an object with property rtnValue:true/false.`);
+                        break;
+                }
             }
-        }
-        // If we have errors, stop execution and return them
-        if(errStrings.length >= 1) { throw errStrings; }
+            //END ERROR CHECKING
+            // If we have errors, stop execution and throw into catch block
+            if (errStrings.length >= 1) { throw errStrings; }
+            //BEGIN STRING BUILD
 
-        var keys = objStr.split(/\.|(\[\d+\])|(\([^.]+\))/);
-        keys = keys.filter(key => !!key);
-        for (let i = 0; i < keys.length; i++) {
-            if (i === 0) {
-                string = '!!' + keys[i];
-                prev = string;
-            }
-            else {
-                string = string + ' && ' + prev + (/\[\d+\]|(\(.*\))/.test(keys[i]) ? keys[i] : '.' + keys[i]);
-                prev = prev + (/\[\d+\]|(\(\d*|\w*\))/.test(keys[i]) ? keys[i] : '.' + keys[i]);
-                if (i === keys.length - 1 && options.rtnValue) {
-                    string = string + ' && ' + prev.replaceAll('!', '');
+            //objStr window.something.somethingElse[0]
+            var keys = objStr.split(/\.|(\[\d+\])|(\([^.]+\))/);
+            //keys ['window', 'something', 'somethingElse', '[0]']
+
+            // filters out possible empty strings from running split with regex
+            // https://stackoverflow.com/questions/48054388/javascript-split-with-regex-returning-array-with-empty-manual-removal-or-regex
+            keys = keys ? keys.filter(key => !!key) : '';
+
+            if (keys.length > 0) {
+                let accessString,
+                    accStrPrev;
+
+                for (let i = 0; i < keys.length; i++) {
+                    if (i === 0) {
+                        //if we are looking at the first idx, initialize accessString and accStrPrev with a starter value. We will always want !!keys[i] to begin with
+                        accessString = '!!' + keys[i];
+                        accStrPrev = accessString;
+                    }
+                    else {
+                        //concatenate the string with each iteration of the loop. If the value has brackets, don't concat with a '.'
+                        accessString = accessString + ' && ' + accStrPrev + (/\[\d+\]|(\(.*\))/.test(keys[i]) ? keys[i] : '.' + keys[i]);
+                        //concat & update accStrPrev following the same rules as above, sans &&
+                        accStrPrev = accStrPrev + (/\[\d+\]|(\(\d*|\w*\))/.test(keys[i]) ? keys[i] : '.' + keys[i]);
+                        //if we are at the last value in the array, and the caller wants a string that would return a value, and not just evaluate truthiness
+                        if (i === keys.length - 1 && options.rtnValue) {
+                            accessString = accessString + ' && ' + accStrPrev.replaceAll('!', '');
+                        }
+                    }
                 }
-            }
-        }
-        if (options?.wrap?.method && options?.wrap?.idx) {
-            string = string.split('&&');
-            for (idx in options.wrap.idx) {
-                if (string[options.wrap.idx[idx]]) {
-                    string.splice(options.wrap.idx[idx], 1, `${options.wrap.method}(${string[options.wrap.idx[idx]]})`)
+                //loop end - string is built at this point
+                // accessString -- !!window && !!window.something && !!window.something.somethingElse && !!window.something.somethingElse[0]
+                //BEGIN METHOD WRAP LOGIC
+                if (options?.wrap?.method && options?.wrap?.idx) {
+                    let accessStringArr = accessString.split('&&');
+                    accessStringArr = accessStringArr.filter(key=>!!key);
+                    for (let idx in options.wrap.idx) {
+                        if (accessStringArr[options.wrap.idx[idx]]) {
+                            accessStringArr.splice(
+                                options.wrap.idx[idx],
+                                1,
+                                `${(/!/.test(accessStringArr[options.wrap.idx[idx]]) && '!!')|| ''}${options.wrap.method}(${accessStringArr[options.wrap.idx[idx]].replaceAll('!!', '').trim()})`)
+                            console.log(accessStringArr);
+                        }
+                    }
+                    accessString = accessStringArr.reduce((prev, curr) => prev.trim() + ' && ' + curr.trim());
+                    console.log(accessString);
                 }
+                return accessString;
+            } else { throw `Something funky happened. KEYS LEN:${keys.len}` }
+        } catch (error) {
+            if (typeof error === 'object') {
+                let errString = '';
+                for (errors in error) {
+                    errString = errString ? errString + ' ' + error[errors] : error[errors];
+                }
+                return errString;
             }
-            string = string.reduce((prev, curr) => prev + ' && ' + curr);
         }
-        return string;
-    } catch (error) {
-        if(typeof error === 'object') {
-            let errString = '';
-            for(errors in error) {
-                errString = errString ? errString + ' ' + error[errors] : error[errors];
-            }
-            return errString;
-        }
-    }
-};
+    };
 
 module.exports = yesAnd;

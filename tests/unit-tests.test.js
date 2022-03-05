@@ -80,9 +80,10 @@ describe('String built to return values', () => {
     });
 });
 
-describe('Wrapping method', () => {
+describe.only('Wrapping method', () => {
     test('Provided a target idx and wrapping method, wrap portions of the obj string with the wrapping method', () => {
-
+        let rtnValue = yesAnd('window.something.somethingElse.name', { rtnValue:true, wrap: {idx:[3,4], method:'JSON.parse'}});
+        expect(rtnValue).toEqual('!!window && !!window.something && !!window.something.somethingElse && !!JSON.parse(window.something.somethingElse.name) && JSON.parse(window.something.somethingElse.name)')
     });
     //extra wrap property called access property after wrap. True extracts the last .prop and places it on the outside of the parens. False places that .prop inside the parens
     // { rtnValue: true, wrap: {idx:[3,4], method: JSON.parse, propAddAfterMethod: true} }
