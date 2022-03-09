@@ -32,7 +32,7 @@ let yesAnd =
             if (!!options && typeof options.rtnValue !== 'boolean') {
                 switch (typeof options.rtnValue) {
                     case 'undefined':
-                        errStrings.push('You didn\'t provide a rtnVal property in the object of argument 2, expects an object with property rtnValue:true/false.');
+                        errStrings.push('You didn\'t provide a rtnValue property in the object of argument 2, expects an object with property rtnValue:true/false.');
                         break;
                     default:
                         errStrings.push(`You provided a rtnValue value property with ${typeof options.rtnValue} data type in the object of argument 2, expects an object with property rtnValue:true/false.`);
@@ -76,41 +76,40 @@ let yesAnd =
                 //loop end - string is built at this point
                 // accessString -- !!window && !!window.something && !!window.something.somethingElse && !!window.something.somethingElse[0]
                 //BEGIN METHOD WRAP LOGIC
-                if (options?.wrap?.method && options?.wrap?.target && options?.wrap?.idx) {
+                if (options?.wrap?.method && options?.wrap?.target) {
                     let accessStringArr = accessString.split('&&');
                     accessStringArr = accessStringArr.map((el) => el.trim()).filter(el => !!el);
                     //updateTarget is some string we want
                     let updateTarget = options.wrap.target;
-                    let idx = options.wrap.idx;
+                    let idx = accessStringArr.indexOf("!!" + updateTarget);
                     if (options.wrap.append) {
                         updateTarget = '!!' + updateTarget;
-                        console.log(accessStringArr.indexOf(updateTarget));
-                        accessStringArr.splice(options.wrap.idx, 0, updateTarget);
+                        accessStringArr.splice(idx, 0, updateTarget);
+                        idx = accessStringArr.lastIndexOf(updateTarget);
                     }
                     for (let entry in accessStringArr) {
-                        console.log(accessStringArr);
                         //change loop to loop over accessStringArr
                         //update all subsequent occurrences starting at idx onward
-                        if (parseInt(entry) >= options.wrap.idx && accessStringArr[entry]) {
+                        if (parseInt(entry) >= idx && accessStringArr[entry]) {
                             accessStringArr.splice(
                                 entry,
                                 1,
-                                `${(/!/.test(accessStringArr[entry]) && '!!') || ''}${options.wrap.method}(${accessStringArr[entry].substring(accessStringArr[entry].indexOf(options.wrap.target), accessStringArr[entry].indexOf(options.wrap.target)+options.wrap.target.length)})${accessStringArr[entry].substring(accessStringArr[entry].indexOf(options.wrap.target)+options.wrap.target.length, accessStringArr[entry].length)}`);
+                                `${(/!/.test(accessStringArr[entry]) && '!!') || ''}${options.wrap.method}(${accessStringArr[entry].substring(accessStringArr[entry].indexOf(options.wrap.target), accessStringArr[entry].indexOf(options.wrap.target) + options.wrap.target.length)})${accessStringArr[entry].substring(accessStringArr[entry].indexOf(options.wrap.target) + options.wrap.target.length, accessStringArr[entry].length)}`);
                         }
                     }
-accessString = accessStringArr.reduce((prev, curr) => prev + ' && ' + curr);
+                    accessString = accessStringArr.reduce((prev, curr) => prev + ' && ' + curr);
                 }
-return accessString;
+                return accessString;
             } else { throw `Something funky happened. KEYS LEN:${keys.len}` }
         } catch (error) {
-    if (typeof error === 'object') {
-        let errString = '';
-        for (let errors in error) {
-            errString = errString ? errString + ' ' + error[errors] : error[errors];
+            if (typeof error === 'object') {
+                let errString = '';
+                for (let errors in error) {
+                    errString = errString ? errString + ' ' + error[errors] : error[errors];
+                }
+                return errString;
+            }
         }
-        return errString;
-    }
-}
     };
 
 module.exports = yesAnd;

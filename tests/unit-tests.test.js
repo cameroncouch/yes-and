@@ -24,17 +24,17 @@ describe('Catch bad arguments', () => {
 
     test('passing not-an-object for argument 2 should return a debug message', () => {
         let rtnValue = yesAnd('abc', 'string');
-        expect(rtnValue).toEqual(`Type of argument 2 was string, expects an object with property rtnValue:true/false. You didn't provide a rtnVal property in the object of argument 2, expects an object with property rtnValue:true/false.`);
+        expect(rtnValue).toEqual(`Type of argument 2 was string, expects an object with property rtnValue:true/false. You didn't provide a rtnValue property in the object of argument 2, expects an object with property rtnValue:true/false.`);
     });
 
     test('passing bad args should return a compound debug message', () => {
         let rtnValue = yesAnd(undefined, 'string');
-        expect(rtnValue).toEqual(`Type of argument 1 passed was undefined, expected a string. Type of argument 2 was string, expects an object with property rtnValue:true/false. You didn't provide a rtnVal property in the object of argument 2, expects an object with property rtnValue:true/false.`);
+        expect(rtnValue).toEqual(`Type of argument 1 passed was undefined, expected a string. Type of argument 2 was string, expects an object with property rtnValue:true/false. You didn't provide a rtnValue property in the object of argument 2, expects an object with property rtnValue:true/false.`);
     });
 
     test('passing an object without rtnValue property should return an error', () => {
         let rtnValue = yesAnd('window.test', { 'test': 'notRtnVal' });
-        expect(rtnValue).toEqual("You didn't provide a rtnVal property in the object of argument 2, expects an object with property rtnValue:true/false.");
+        expect(rtnValue).toEqual("You didn't provide a rtnValue property in the object of argument 2, expects an object with property rtnValue:true/false.");
     });
 
     //Test arg2 object but rtnVal val not a bool
@@ -76,10 +76,9 @@ describe('Wrapping method', () => {
     test('Provided a target idx and wrapping method, wrap portions of the obj string with the wrapping method', () => {
         let rtnValue = yesAnd('window.something.somethingElse.name', { 
             rtnValue: true, 
-            wrap: { 
-                idx: 3,
+            wrap: {
                 target: 'window.something.somethingElse.name',
-                method: 'JSON.parse' 
+                method: 'JSON.parse'
             } 
         });
         expect(rtnValue).toEqual('!!window && !!window.something && !!window.something.somethingElse && !!JSON.parse(window.something.somethingElse.name) && JSON.parse(window.something.somethingElse.name)')
@@ -90,10 +89,9 @@ describe('Wrapping method', () => {
             {
                 rtnValue: true,
                 wrap: {
-                    idx: 3,
                     method: 'JSON.parse',
                     target: 'window.something.somethingElse',
-                    append: ['.name','.thing']
+                    append: true
                 }
             }
         );
@@ -106,10 +104,9 @@ describe('Wrapping method', () => {
             {
                 rtnValue: true,
                 wrap: {
-                    idx: 'abc',
                     method: 'JSON.parse',
                     target: 'window.something.somethingElse',
-                    append: ['.name','.thing']
+                    append: true
                 }
             }
         );
