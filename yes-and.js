@@ -76,32 +76,41 @@ let yesAnd =
                 //loop end - string is built at this point
                 // accessString -- !!window && !!window.something && !!window.something.somethingElse && !!window.something.somethingElse[0]
                 //BEGIN METHOD WRAP LOGIC
-                if (options?.wrap?.method && options?.wrap?.idx) {
+                if (options?.wrap?.method && options?.wrap?.target && options?.wrap?.idx) {
                     let accessStringArr = accessString.split('&&');
-                    accessStringArr = accessStringArr.filter(key=>!!key);
-                    for (let idx in options.wrap.idx) {
-                        if (accessStringArr[options.wrap.idx[idx]]) {
+                    accessStringArr = accessStringArr.map((el) => el.trim()).filter(el => !!el);
+                    //updateTarget is some string we want
+                    let updateTarget = options.wrap.target;
+                    let idx = options.wrap.idx;
+                    if (options.wrap.append) {
+                        updateTarget = '!!' + updateTarget;
+                        console.log(accessStringArr.indexOf(updateTarget));
+                        accessStringArr.splice(options.wrap.idx, 0, updateTarget);
+                    }
+                    for (let entry in accessStringArr) {
+                        console.log(accessStringArr);
+                        //change loop to loop over accessStringArr
+                        //update all subsequent occurrences starting at idx onward
+                        if (parseInt(entry) >= options.wrap.idx && accessStringArr[entry]) {
                             accessStringArr.splice(
-                                options.wrap.idx[idx],
+                                entry,
                                 1,
-                                `${(/!/.test(accessStringArr[options.wrap.idx[idx]]) && '!!')|| ''}${options.wrap.method}(${accessStringArr[options.wrap.idx[idx]].replaceAll('!!', '').trim()})`)
-                            console.log(accessStringArr);
+                                `${(/!/.test(accessStringArr[entry]) && '!!') || ''}${options.wrap.method}(${accessStringArr[entry].substring(accessStringArr[entry].indexOf(options.wrap.target), accessStringArr[entry].indexOf(options.wrap.target)+options.wrap.target.length)})${accessStringArr[entry].substring(accessStringArr[entry].indexOf(options.wrap.target)+options.wrap.target.length, accessStringArr[entry].length)}`);
                         }
                     }
-                    accessString = accessStringArr.reduce((prev, curr) => prev.trim() + ' && ' + curr.trim());
-                    console.log(accessString);
+accessString = accessStringArr.reduce((prev, curr) => prev + ' && ' + curr);
                 }
-                return accessString;
+return accessString;
             } else { throw `Something funky happened. KEYS LEN:${keys.len}` }
         } catch (error) {
-            if (typeof error === 'object') {
-                let errString = '';
-                for (errors in error) {
-                    errString = errString ? errString + ' ' + error[errors] : error[errors];
-                }
-                return errString;
-            }
+    if (typeof error === 'object') {
+        let errString = '';
+        for (let errors in error) {
+            errString = errString ? errString + ' ' + error[errors] : error[errors];
         }
+        return errString;
+    }
+}
     };
 
 module.exports = yesAnd;

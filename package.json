@@ -12,6 +12,7 @@
   "author": "cam couch",
   "license": "ISC",
   "devDependencies": {
-    "jest": "^27.5.1"
+    "jest": "^27.5.1",
+    "uglify-js": "^3.15.2"
   }
 }
