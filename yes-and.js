@@ -45,7 +45,7 @@ let yesAnd =
             //BEGIN STRING BUILD
 
             //objStr window.something.somethingElse[0]
-            var keys = objStr.split(/\.|(\[\d+\])|(\([^.]+\))/);
+            var keys = objStr.split(/\.|(\[\d+\])|(\([^.]*\))/);
             //keys ['window', 'something', 'somethingElse', '[0]']
 
             // filters out possible empty strings from running split with regex

@@ -7,6 +7,7 @@
     "test": "tests"
   },
   "scripts": {
+    "prep": "npm run shrink && yes-and.min.js > ./tests/yes-and-test.js",
     "test": "jest",
     "shrink": "uglifyjs -c -m -- yes-and.js > yes-and.min.js"
   },
