@@ -45,7 +45,7 @@ let yesAnd =
             //BEGIN STRING BUILD
 
             //objStr window.something.somethingElse[0]
-            var keys = objStr.split(/\.|(\[\d+\])|(\([^.]*\))/);
+            var keys = objStr.split(/(?<=[a-zA-Z0-9]+)(\[[a-zA-Z0-9]\])(?=[[.]?)|(?<=[a-zA-Z0-9.])(\(['"]{1}.+?['"]{1}\))(?=[[.]?)|\./);
             //keys ['window', 'something', 'somethingElse', '[0]']
 
             // filters out possible empty strings from running split with regex
@@ -99,6 +99,8 @@ let yesAnd =
                     }
                     accessString = accessStringArr.reduce((prev, curr) => prev + ' && ' + curr);
                 }
+                // (function(text) { var el = document.createElement("textarea"), sel = document.getSelection(); el.textContent = text, document.body.appendChild(el), sel.removeAllRanges(), el.select(), document.execCommand("copy"), sel.removeAllRanges(), document.body.removeChild(el)})(accessString);
+                // console.log('~~ From yesAnd: Your string was copied to the clipboard. See output below ~~')
                 return accessString;
             } else { throw `Something funky happened. KEYS LEN:${keys.len}` }
         } catch (error) {

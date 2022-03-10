@@ -70,6 +70,12 @@ describe('String built to return values', () => {
         let evald = eval(rtnValue);
         expect(evald).toEqual('simpleArrValue');
     });
+
+    test.only('Handle crazy but common string', () => {
+        let rtnValue = yesAnd("document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span').innerText", {rtnValue: true, wrap:{method:"JSON.stringify",target:"document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span')",append:true}});
+        console.log(rtnValue);
+        expect(rtnValue).toEqual("!!document && !!document.querySelector && !!document.querySelector('#id.abc [name='name']') && !!document.querySelector('#id.abc [name='name']').closest && !!document.querySelector('#id.abc [name='name']').closest('.xyz') && !!document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector && !!document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span') && !!document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span').innerText && document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span').innerText")
+    })
 });
 
 describe('Wrapping method', () => {
