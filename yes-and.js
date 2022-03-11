@@ -6,6 +6,8 @@ let yesAnd =
      */
     function (objStr, options) {
         try {
+            let skip = false;
+            if (typeof options === 'undefined') { skip = true }
             // Array to hold all errors found with supplied arguments
             //BEGIN ERROR CHECKING
             let errStrings = [];
@@ -19,33 +21,36 @@ let yesAnd =
                         break;
                 }
             }
-            if (!options || typeof options !== 'object') {
-                switch (typeof options) {
-                    case 'undefined':
-                        errStrings.push('You didn\'t provide an options object for agument 2, expects an object with property rtnValue:true/false.');
-                        break;
-                    default:
-                        errStrings.push(`Type of argument 2 was ${typeof options}, expects an object with property rtnValue:true/false.`);
-                        break;
+            if (!skip) {
+                if (options && typeof options !== 'object') {
+                    switch (typeof options) {
+                        case 'undefined':
+                            errStrings.push('You didn\'t provide an options object for agument 2, expects an object with property rtnValue:true/false.');
+                            break;
+                        default:
+                            errStrings.push(`Type of argument 2 was ${typeof options}, expects an object with property rtnValue:true/false.`);
+                            break;
+                    }
+                }
+                if (options && typeof options.rtnValue !== 'boolean') {
+                    switch (typeof options.rtnValue) {
+                        case 'undefined':
+                            errStrings.push('You didn\'t provide a rtnValue property in the object of argument 2, expects an object with property rtnValue:true/false.');
+                            break;
+                        default:
+                            errStrings.push(`You provided a rtnValue value property with ${typeof options.rtnValue} data type in the object of argument 2, expects an object with property rtnValue:true/false.`);
+                            break;
+                    }
                 }
             }
-            if (!!options && typeof options.rtnValue !== 'boolean') {
-                switch (typeof options.rtnValue) {
-                    case 'undefined':
-                        errStrings.push('You didn\'t provide a rtnValue property in the object of argument 2, expects an object with property rtnValue:true/false.');
-                        break;
-                    default:
-                        errStrings.push(`You provided a rtnValue value property with ${typeof options.rtnValue} data type in the object of argument 2, expects an object with property rtnValue:true/false.`);
-                        break;
-                }
-            }
+
             //END ERROR CHECKING
             // If we have errors, stop execution and throw into catch block
             if (errStrings.length >= 1) { throw errStrings; }
             //BEGIN STRING BUILD
 
             //objStr window.something.somethingElse[0]
-            var keys = objStr.split(/(?<=[a-zA-Z0-9]+)(\[[a-zA-Z0-9]\])(?=[[.]?)|(?<=[a-zA-Z0-9.])(\(['"]{1}.+?['"]{1}\))(?=[[.]?)|\./);
+            var keys = objStr.split(/(?<=[a-zA-Z0-9]+)(\[[a-zA-Z0-9"'`]+\])(?=[[.]?)|(?<=[a-zA-Z0-9.])(\(['"`]*?.*?['"`]*?\))(?=[[.]?)|\./);
             //keys ['window', 'something', 'somethingElse', '[0]']
 
             // filters out possible empty strings from running split with regex
@@ -64,11 +69,11 @@ let yesAnd =
                     }
                     else {
                         //concatenate the string with each iteration of the loop. If the value has brackets, don't concat with a '.'
-                        accessString = accessString + ' && ' + accStrPrev + (/\[\d+\]|(\(.*\))/.test(keys[i]) ? keys[i] : '.' + keys[i]);
+                        accessString = accessString + ' && ' + accStrPrev + (/\[[a-zA-Z0-9"'`]+\]|(\(.*\))/.test(keys[i]) ? keys[i] : '.' + keys[i]);
                         //concat & update accStrPrev following the same rules as above, sans &&
-                        accStrPrev = accStrPrev + (/\[\d+\]|(\(\d*|\w*\))/.test(keys[i]) ? keys[i] : '.' + keys[i]);
+                        accStrPrev = accStrPrev + (/\[[a-zA-Z0-9"'`]+\]|(\.*\))/.test(keys[i]) ? keys[i] : '.' + keys[i]);
                         //if we are at the last value in the array, and the caller wants a string that would return a value, and not just evaluate truthiness
-                        if (i === keys.length - 1 && options.rtnValue) {
+                        if (i === keys.length - 1 && (skip || options.rtnValue)) {
                             accessString = accessString + ' && ' + accStrPrev.replaceAll('!', '');
                         }
                     }
@@ -100,7 +105,8 @@ let yesAnd =
                     accessString = accessStringArr.reduce((prev, curr) => prev + ' && ' + curr);
                 }
                 // (function(text) { var el = document.createElement("textarea"), sel = document.getSelection(); el.textContent = text, document.body.appendChild(el), sel.removeAllRanges(), el.select(), document.execCommand("copy"), sel.removeAllRanges(), document.body.removeChild(el)})(accessString);
-                // console.log('~~ From yesAnd: Your string was copied to the clipboard. See output below ~~')
+                //copy(accessString)
+                console.log('~~ From yesAnd: Your string was copied to the clipboard. See output below ~~')
                 return accessString;
             } else { throw `Something funky happened. KEYS LEN:${keys.len}` }
         } catch (error) {

@@ -71,11 +71,49 @@ describe('String built to return values', () => {
         expect(evald).toEqual('simpleArrValue');
     });
 
-    test.only('Handle crazy but common string', () => {
-        let rtnValue = yesAnd("document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span').innerText", {rtnValue: true, wrap:{method:"JSON.stringify",target:"document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span')",append:true}});
+    test('Return value if no options provided', () => {
+        let rtnValue = yesAnd("document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span').innerText");
+        expect(rtnValue).toEqual("!!document && !!document.querySelector && !!document.querySelector('#id.abc [name='name']') && !!document.querySelector('#id.abc [name='name']').closest && !!document.querySelector('#id.abc [name='name']').closest('.xyz') && !!document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector && !!document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span') && !!document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span').innerText && document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span').innerText")
+    });
+
+    test('Handle crazy but common string', () => {
+        let rtnValue = yesAnd("document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span').innerText", {rtnValue: true});
         console.log(rtnValue);
         expect(rtnValue).toEqual("!!document && !!document.querySelector && !!document.querySelector('#id.abc [name='name']') && !!document.querySelector('#id.abc [name='name']').closest && !!document.querySelector('#id.abc [name='name']').closest('.xyz') && !!document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector && !!document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span') && !!document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span').innerText && document.querySelector('#id.abc [name='name']').closest('.xyz').querySelector('div span').innerText")
-    })
+    });
+
+    test('handle brackets with any character', () => {
+        let rtnVal = yesAnd('window.someAPI.getter[a].innerText', {rtnValue:false});
+        console.log(rtnVal);
+        expect(rtnVal).toEqual("!!window && !!window.someAPI && !!window.someAPI.getter && !!window.someAPI.getter[a] && !!window.someAPI.getter[a].innerText");
+    });
+
+    test('handle doing property accessor chains with brackets', () => {
+        let rtnVal = yesAnd('window.someAPI.getter[`apples`].innerText', {rtnValue:false});
+        console.log(rtnVal);
+        expect(rtnVal).toEqual("!!window && !!window.someAPI && !!window.someAPI.getter && !!window.someAPI.getter[`apples`] && !!window.someAPI.getter[`apples`].innerText");
+    });
+
+    test('handle parens with numbers', () => {
+        let rtnVal = yesAnd('window.someAPI.getter(26).innerText', {rtnValue:false});
+        expect(rtnVal).toEqual("!!window && !!window.someAPI && !!window.someAPI.getter && !!window.someAPI.getter(26) && !!window.someAPI.getter(26).innerText");
+    });
+
+    test('handle parens with no content', () => {
+        let rtnVal = yesAnd('window.someAPI.getter().innerText', {rtnValue: true});
+        console.log(rtnVal);
+        expect(rtnVal).toEqual("!!window && !!window.someAPI && !!window.someAPI.getter && !!window.someAPI.getter() && !!window.someAPI.getter().innerText && window.someAPI.getter().innerText")
+    });
+    test('handle parens with string', () => {
+        let rtnVal = yesAnd('window.someAPI.getter(`string`).innerText', {rtnValue: true});
+        console.log(rtnVal);
+        expect(rtnVal).toEqual("!!window && !!window.someAPI && !!window.someAPI.getter && !!window.someAPI.getter(`string`) && !!window.someAPI.getter(`string`).innerText && window.someAPI.getter(`string`).innerText")
+    });
+    test('handle parens with var', () => {
+        let rtnVal = yesAnd('window.someAPI.getter(someVar).innerText', {rtnValue: true});
+        console.log(rtnVal);
+        expect(rtnVal).toEqual("!!window && !!window.someAPI && !!window.someAPI.getter && !!window.someAPI.getter(someVar) && !!window.someAPI.getter(someVar).innerText && window.someAPI.getter(someVar).innerText")
+    });
 });
 
 describe('Wrapping method', () => {
